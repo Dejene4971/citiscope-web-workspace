@@ -1,88 +1,72 @@
+import { Typography } from '@mui/material';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { Box, Container } from '@mui/material';
+import { LoginFormEnhanced } from '../../components/auth/LoginFormEnhanced';
 import { loginStart, loginSuccess, loginFailure } from '../../features/auth/authSlice';
-import type { RootState } from '../../store/store';
+import { RootState } from '../../store/store';
+import { LoginFormData } from '../../schemas/auth.schema';
 
 export const LoginPage: React.FC = () => {
   const dispatch = useDispatch();
-  const authState = useSelector((state: RootState) => state.auth);
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+  const navigate = useNavigate();
+  const { isLoading, error } = useSelector((state: RootState) => state.auth);
 
-  console.log('[LoginPage] auth state:', authState);
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('[LoginPage] form submitted, email:', email, 'password:', password);
-
+  const handleLogin = async (data: LoginFormData) => {
     dispatch(loginStart());
-    console.log('[LoginPage] dispatched loginStart');
 
+    // Simulate API call with validation
     setTimeout(() => {
-      console.log('[LoginPage] timeout fired, dispatching loginSuccess');
+      // Mock user data based on email domain
+      let role: 'woreda_admin' | 'zonal_admin' | 'regional_admin' | 'federal_admin' = 'federal_admin';
+      
+      if (data.email.includes('woreda')) {
+        role = 'woreda_admin';
+      } else if (data.email.includes('zonal')) {
+        role = 'zonal_admin';
+      } else if (data.email.includes('regional')) {
+        role = 'regional_admin';
+      }
+
       dispatch(loginSuccess({
         user: {
           user_id: '1',
-          email,
-          full_name: 'Admin User',
-          role: 'federal_admin',
-          admin_unit_id: 'FED-001',
-          permissions: [],
+          email: data.email,
+          full_name: data.email.split('@')[0].replace('.', ' '),
+          role: role,
+          admin_unit_id: role === 'woreda_admin' ? 'W-001' : role === 'zonal_admin' ? 'Z-001' : 'FED-001',
+          permissions: ['view_dashboard', 'manage_issues', 'view_analytics'],
           created_at: new Date().toISOString(),
         },
-        token: 'mock-token',
+        token: 'mock-jwt-token-12345',
       }));
-      console.log('[LoginPage] dispatched loginSuccess');
-    }, 500);
+      
+      navigate('/');
+    }, 1000);
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f0f2f5' }}>
-      <div style={{ background: '#fff', padding: 40, borderRadius: 8, boxShadow: '0 2px 16px rgba(0,0,0,.12)', width: 360 }}>
-        <h2 style={{ margin: '0 0 8px', textAlign: 'center' }}>🏙️ CitiScope</h2>
-        <p style={{ margin: '0 0 24px', textAlign: 'center', color: '#666' }}>Admin Dashboard</p>
-
-        <form onSubmit={handleLogin}>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>Email</label>
-            <input
-              type="text"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 15, boxSizing: 'border-box' }}
-              placeholder="admin@citiscope.com"
-            />
-          </div>
-          <div style={{ marginBottom: 24 }}>
-            <label style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 15, boxSizing: 'border-box' }}
-              placeholder="any password"
-            />
-          </div>
-
-          {authState.error && (
-            <p style={{ color: '#d32f2f', marginBottom: 16, textAlign: 'center' }}>{authState.error}</p>
-          )}
-
-          <button
-            type="submit"
-            style={{
-              width: '100%', padding: '12px', background: '#1976d2', color: '#fff',
-              border: 'none', borderRadius: 6, fontSize: 16, fontWeight: 600, cursor: 'pointer',
-            }}
-          >
-            Sign In
-          </button>
-        </form>
-
-        <p style={{ marginTop: 16, textAlign: 'center', color: '#888', fontSize: 13 }}>
-          Enter any email + any password
-        </p>
-      </div>
-    </div>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'background.default',
+      }}
+    >
+      <Container maxWidth="sm">
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+            🏙️ CitiScope
+          </Typography>
+          <Typography variant="subtitle1" color="text.secondary">
+            National Multi-Tier Civic Intelligence Platform
+          </Typography>
+        </Box>
+        <LoginFormEnhanced onSubmit={handleLogin} isLoading={isLoading} error={error} />
+      </Container>
+    </Box>
   );
 };
