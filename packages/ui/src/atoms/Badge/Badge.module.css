@@ -1,0 +1,27 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 999px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.small { padding: 2px 8px; font-size: 0.75rem; }
+.medium { padding: 4px 10px; font-size: 0.8125rem; }
+
+.dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+.primary { background: #e3f2fd; color: #1565c0; }
+.primary .dot { background: #1565c0; }
+.secondary { background: #f3e5f5; color: #6a1b9a; }
+.secondary .dot { background: #6a1b9a; }
+.success { background: #e8f5e9; color: #1b5e20; }
+.success .dot { background: #2e7d32; }
+.warning { background: #fff3e0; color: #e65100; }
+.warning .dot { background: #ed6c02; }
+.danger { background: #ffebee; color: #b71c1c; }
+.danger .dot { background: #d32f2f; }
+.info { background: #e0f7fa; color: #006064; }
+.info .dot { background: #00838f; }
+.neutral { background: #f3f4f6; color: #374151; }
+.neutral .dot { background: #6b7280; }

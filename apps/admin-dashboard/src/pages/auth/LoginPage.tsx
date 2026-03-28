@@ -1,94 +1,88 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Container, Paper, Typography, Box } from '@mui/material';
-import { Button, Input, LoadingSpinner } from '@citiscope/ui';
 import { loginStart, loginSuccess, loginFailure } from '../../features/auth/authSlice';
-import { RootState } from '../../store/store';
+import type { RootState } from '../../store/store';
 
 export const LoginPage: React.FC = () => {
   const dispatch = useDispatch();
-  const { isLoading, error } = useSelector((state: RootState) => state.auth);
+  const authState = useSelector((state: RootState) => state.auth);
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
 
-  const handleLogin = async (e: React.FormEvent) => {
+  console.log('[LoginPage] auth state:', authState);
+
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('[LoginPage] form submitted, email:', email, 'password:', password);
+
     dispatch(loginStart());
-    
-    // Simulate API call
+    console.log('[LoginPage] dispatched loginStart');
+
     setTimeout(() => {
-      if (email && password) {
-        dispatch(loginSuccess({
-          user: {
-            user_id: '1',
-            email: email,
-            full_name: 'Admin User',
-            role: 'federal_admin',
-            admin_unit_id: 'FED-001',
-            permissions: ['view_dashboard', 'manage_issues', 'view_analytics'],
-            created_at: new Date().toISOString(),
-          },
-          token: 'mock-jwt-token-12345',
-        }));
-      } else {
-        dispatch(loginFailure('Invalid credentials'));
-      }
-    }, 1000);
+      console.log('[LoginPage] timeout fired, dispatching loginSuccess');
+      dispatch(loginSuccess({
+        user: {
+          user_id: '1',
+          email,
+          full_name: 'Admin User',
+          role: 'federal_admin',
+          admin_unit_id: 'FED-001',
+          permissions: [],
+          created_at: new Date().toISOString(),
+        },
+        token: 'mock-token',
+      }));
+      console.log('[LoginPage] dispatched loginSuccess');
+    }, 500);
   };
 
-  if (isLoading) {
-    return <LoadingSpinner message="Authenticating..." />;
-  }
-
   return (
-    <Container maxWidth="sm">
-      <Box sx={{ mt: 8 }}>
-        <Paper sx={{ p: 4 }}>
-          <Typography variant="h4" align="center" gutterBottom>
-            🏙️ CitiScope
-          </Typography>
-          <Typography variant="subtitle1" align="center" color="text.secondary" gutterBottom>
-            Admin Dashboard Login
-          </Typography>
-          
-          <form onSubmit={handleLogin}>
-            <Input
-              label="Email"
-              type="email"
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f0f2f5' }}>
+      <div style={{ background: '#fff', padding: 40, borderRadius: 8, boxShadow: '0 2px 16px rgba(0,0,0,.12)', width: 360 }}>
+        <h2 style={{ margin: '0 0 8px', textAlign: 'center' }}>🏙️ CitiScope</h2>
+        <p style={{ margin: '0 0 24px', textAlign: 'center', color: '#666' }}>Admin Dashboard</p>
+
+        <form onSubmit={handleLogin}>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>Email</label>
+            <input
+              type="text"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              margin="normal"
-              required
+              onChange={e => setEmail(e.target.value)}
+              style={{ width: '100%', padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 15, boxSizing: 'border-box' }}
+              placeholder="admin@citiscope.com"
             />
-            <Input
-              label="Password"
+          </div>
+          <div style={{ marginBottom: 24 }}>
+            <label style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>Password</label>
+            <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              margin="normal"
-              required
+              onChange={e => setPassword(e.target.value)}
+              style={{ width: '100%', padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 15, boxSizing: 'border-box' }}
+              placeholder="any password"
             />
-            <Button
-              type="submit"
-              fullWidth
-              size="large"
-              sx={{ mt: 3 }}
-            >
-              Sign In
-            </Button>
-          </form>
-          
-          {error && (
-            <Typography color="error" align="center" sx={{ mt: 2 }}>
-              {error}
-            </Typography>
+          </div>
+
+          {authState.error && (
+            <p style={{ color: '#d32f2f', marginBottom: 16, textAlign: 'center' }}>{authState.error}</p>
           )}
-          
-          <Typography variant="body2" align="center" sx={{ mt: 2, color: 'text.secondary' }}>
-            Demo: admin@citiscope.com / any password
-          </Typography>
-        </Paper>
-      </Box>
-    </Container>
+
+          <button
+            type="submit"
+            style={{
+              width: '100%', padding: '12px', background: '#1976d2', color: '#fff',
+              border: 'none', borderRadius: 6, fontSize: 16, fontWeight: 600, cursor: 'pointer',
+            }}
+          >
+            Sign In
+          </button>
+        </form>
+
+        <p style={{ marginTop: 16, textAlign: 'center', color: '#888', fontSize: 13 }}>
+          Enter any email + any password
+        </p>
+      </div>
+    </div>
   );
 };

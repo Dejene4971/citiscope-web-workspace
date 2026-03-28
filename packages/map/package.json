@@ -1,0 +1,28 @@
+{
+  "name": "@citiscope/map",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint . --max-warnings 0",
+    "build": "tsup"
+  },
+  "dependencies": {
+    "@citiscope/types": "workspace:*",
+    "leaflet": "^1.9.0",
+    "react-leaflet": "^4.2.0"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.0",
+    "@types/react": "^18.2.0",
+    "tsup": "^8.0.0"
+  }
+}
