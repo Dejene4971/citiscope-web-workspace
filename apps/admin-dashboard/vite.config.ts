@@ -7,7 +7,11 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@citiscope/types': path.resolve(__dirname, '../../packages/types/src'),
+      '@citiscope/types':   path.resolve(__dirname, '../../packages/types/src'),
+      '@citiscope/ui':      path.resolve(__dirname, '../../packages/ui/src'),
+      '@citiscope/charts':  path.resolve(__dirname, '../../packages/charts/src'),
+      '@citiscope/store':   path.resolve(__dirname, '../../packages/store/src'),
+      '@citiscope/hooks':   path.resolve(__dirname, '../../packages/hooks/src'),
     },
   },
   server: {

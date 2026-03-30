@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '../store/store';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { DashboardPage } from '../pages/dashboard/DashboardPage';
-import { MapPage } from '../pages/map/MapPage';
+import { MapViewPage } from '../pages/map/MapViewPage';
 import { IssuesPage } from '../pages/issues/IssuesPage';
 import { AnalyticsPage } from '../pages/analytics/AnalyticsPage';
 import { IoTPage } from '../pages/iot/IoTPage';
@@ -24,7 +24,7 @@ function AppRoutes() {
         element={isAuthenticated ? <AppShell /> : <Navigate to="/login" replace />}
       >
         <Route index element={<DashboardPage />} />
-        <Route path="map" element={<MapPage />} />
+        <Route path="map" element={<MapViewPage />} />
         <Route path="issues" element={<IssuesPage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="iot" element={<IoTPage />} />
