@@ -5,6 +5,9 @@ import { RootState } from './store/store';
 import { LoginPage } from './pages/auth/LoginPage';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { MapViewPage } from './pages/map/MapViewPage';
+import { AnalyticsPage } from './pages/analytics/AnalyticsPage';
+import { IssuesPage } from './pages/issues/IssuesPage';
+import { IoTPage } from './pages/iot/IoTPage';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
@@ -27,9 +30,9 @@ function App() {
           <Route element={isAuthenticated ? <DashboardLayout /> : <Navigate to="/login" />}>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/map" element={<MapViewPage />} />
-            <Route path="/analytics" element={<div>Analytics Page</div>} />
-            <Route path="/issues" element={<div>Issues Page</div>} />
-            <Route path="/iot" element={<div>IoT Sensors Page</div>} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/issues" element={<IssuesPage />} />
+            <Route path="/iot" element={<IoTPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

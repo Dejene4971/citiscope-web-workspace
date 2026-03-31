@@ -1,104 +1,306 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useState } from 'react';
 import {
-  Box, Typography, Paper, Chip, Grid,
-  Table, TableHead, TableBody, TableRow, TableCell, TableContainer,
-  TextField, InputAdornment,
+  Box,
+  Paper,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Chip,
+  IconButton,
+  TextField,
+  InputAdornment,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
+  Grid,
+  Card,
+  CardContent,
+  Button,
+  Pagination,
+  Stack,
 } from '@mui/material';
-import { Search } from '@mui/icons-material';
-import { fetchStart, fetchSuccess, selectIssue } from '../../features/issues/issuesSlice';
-import type { RootState, AppDispatch } from '../../store/store';
-import type { Issue } from '@citiscope/types';
+import {
+  Search as SearchIcon,
+  FilterList as FilterIcon,
+  Visibility as ViewIcon,
+  Edit as EditIcon,
+  CheckCircle as ResolvedIcon,
+  Pending as PendingIcon,
+  Warning as WarningIcon,
+} from '@mui/icons-material';
 
-const MOCK_ISSUES: Issue[] = [
-  { issue_id: '1', title: 'Burst Water Pipe on Bole Road',    description: 'Major water leak causing flooding',      category: 'water',       severity: 'critical', status: 'pending',     location: { latitude: 9.011, longitude: 38.746, woreda_id: 'W-001' }, reported_by: 'citizen-1', reported_at: '2026-03-25T10:00:00Z', media_urls: [], upvotes: 12 },
-  { issue_id: '2', title: 'Large Pothole near Meskel Square', description: 'Deep pothole causing traffic issues',    category: 'road',        severity: 'high',     status: 'in_progress', location: { latitude: 9.033, longitude: 38.765, woreda_id: 'W-002' }, reported_by: 'citizen-2', reported_at: '2026-03-26T09:30:00Z', media_urls: [], upvotes: 8  },
-  { issue_id: '3', title: 'Street Light Outage – Kazanchis',  description: 'Multiple street lights not working',    category: 'electricity', severity: 'medium',   status: 'assigned',    location: { latitude: 9.045, longitude: 38.712, woreda_id: 'W-003' }, reported_by: 'citizen-3', reported_at: '2026-03-27T18:00:00Z', media_urls: [], upvotes: 5  },
-  { issue_id: '4', title: 'Sewage Overflow – Piassa',         description: 'Sewage overflow on main street',        category: 'sewage',      severity: 'high',     status: 'verified',    location: { latitude: 9.022, longitude: 38.733, woreda_id: 'W-001' }, reported_by: 'citizen-4', reported_at: '2026-03-27T14:00:00Z', media_urls: [], upvotes: 20 },
-  { issue_id: '5', title: 'Uncollected Waste – Merkato',      description: 'Waste collection overdue by 3 days',    category: 'waste',       severity: 'low',      status: 'pending',     location: { latitude: 9.008, longitude: 38.754, woreda_id: 'W-004' }, reported_by: 'citizen-5', reported_at: '2026-03-28T08:00:00Z', media_urls: [], upvotes: 3  },
-  { issue_id: '6', title: 'Road Crack – CMC Road',            description: 'Structural crack spreading across lane', category: 'road',       severity: 'medium',   status: 'resolved',    location: { latitude: 9.055, longitude: 38.780, woreda_id: 'W-002' }, reported_by: 'citizen-6', reported_at: '2026-03-24T11:00:00Z', media_urls: [], upvotes: 7  },
+// Mock data for issues
+const mockIssues = [
+  {
+    id: 'ISS-001',
+    title: 'Burst Water Pipe',
+    category: 'Water',
+    severity: 'critical',
+    status: 'pending',
+    location: 'Bole Woreda, Addis Ababa',
+    reportedAt: '2024-03-31T08:00:00Z',
+    assignedTo: 'Unassigned',
+  },
+  {
+    id: 'ISS-002',
+    title: 'Large Pothole',
+    category: 'Road',
+    severity: 'high',
+    status: 'verified',
+    location: 'Kirkos Woreda, Addis Ababa',
+    reportedAt: '2024-03-30T14:30:00Z',
+    assignedTo: 'Tech Team A',
+  },
+  {
+    id: 'ISS-003',
+    title: 'Street Light Outage',
+    category: 'Electricity',
+    severity: 'medium',
+    status: 'assigned',
+    location: 'Yeka Woreda, Addis Ababa',
+    reportedAt: '2024-03-29T18:00:00Z',
+    assignedTo: 'Tech Team B',
+  },
+  {
+    id: 'ISS-004',
+    title: 'Trash Accumulation',
+    category: 'Waste',
+    severity: 'low',
+    status: 'in_progress',
+    location: 'Lideta Woreda, Addis Ababa',
+    reportedAt: '2024-03-28T09:15:00Z',
+    assignedTo: 'Tech Team C',
+  },
+  {
+    id: 'ISS-005',
+    title: 'Sewage Overflow',
+    category: 'Drainage',
+    severity: 'critical',
+    status: 'resolved',
+    location: 'Gulele Woreda, Addis Ababa',
+    reportedAt: '2024-03-27T11:00:00Z',
+    assignedTo: 'Tech Team A',
+  },
 ];
 
-const SEV_COLOR: Record<string, 'error' | 'warning' | 'info' | 'success'> = {
-  critical: 'error', high: 'warning', medium: 'info', low: 'success',
+const getSeverityColor = (severity: string) => {
+  switch (severity) {
+    case 'critical': return 'error';
+    case 'high': return 'warning';
+    case 'medium': return 'info';
+    case 'low': return 'success';
+    default: return 'default';
+  }
 };
-const STA_COLOR: Record<string, 'error' | 'warning' | 'info' | 'success' | 'default'> = {
-  pending: 'warning', verified: 'info', assigned: 'info', in_progress: 'warning', resolved: 'success',
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'pending': return 'warning';
+    case 'verified': return 'info';
+    case 'assigned': return 'primary';
+    case 'in_progress': return 'secondary';
+    case 'resolved': return 'success';
+    default: return 'default';
+  }
 };
 
 export const IssuesPage: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { items, isLoading } = useSelector((s: RootState) => s.issues);
-  const [search, setSearch] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [severityFilter, setSeverityFilter] = useState('all');
+  const [page, setPage] = useState(1);
 
-  useEffect(() => {
-    dispatch(fetchStart());
-    setTimeout(() => {
-      dispatch(fetchSuccess({ data: MOCK_ISSUES, total: MOCK_ISSUES.length, page: 1, per_page: 20 }));
-    }, 300);
-  }, [dispatch]);
-
-  const filtered = search
-    ? items.filter(i => i.title.toLowerCase().includes(search.toLowerCase()))
-    : items;
+  const stats = {
+    total: mockIssues.length,
+    pending: mockIssues.filter(i => i.status === 'pending').length,
+    inProgress: mockIssues.filter(i => i.status === 'in_progress').length,
+    resolved: mockIssues.filter(i => i.status === 'resolved').length,
+    critical: mockIssues.filter(i => i.severity === 'critical').length,
+  };
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h5" fontWeight={700}>Issues</Typography>
-          <Typography variant="body2" color="text.secondary">{items.length} total issues</Typography>
-        </Box>
-        <TextField
-          size="small"
-          placeholder="Search issues…"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          InputProps={{ startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> }}
-          sx={{ width: 260 }}
-        />
-      </Box>
+      {/* Page Header */}
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, mb: 1 }}>
+        Issue Management
+      </Typography>
+      <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+        View and manage all reported infrastructure issues across administrative units
+      </Typography>
 
-      {/* Severity summary */}
-      <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
-        {Object.entries(SEV_COLOR).map(([sev, color]) => (
-          <Chip key={sev} size="small" color={color}
-            label={`${sev}: ${items.filter(i => i.severity === sev).length}`} />
-        ))}
-      </Box>
+      {/* Stats Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={6} md={2.4}>
+          <Card>
+            <CardContent>
+              <Typography variant="subtitle2" color="text.secondary">Total Issues</Typography>
+              <Typography variant="h4">{stats.total}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={2.4}>
+          <Card sx={{ borderTop: '3px solid #ff9800' }}>
+            <CardContent>
+              <Typography variant="subtitle2" color="text.secondary">Pending</Typography>
+              <Typography variant="h4" color="warning.main">{stats.pending}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={2.4}>
+          <Card sx={{ borderTop: '3px solid #2196f3' }}>
+            <CardContent>
+              <Typography variant="subtitle2" color="text.secondary">In Progress</Typography>
+              <Typography variant="h4" color="info.main">{stats.inProgress}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={2.4}>
+          <Card sx={{ borderTop: '3px solid #4caf50' }}>
+            <CardContent>
+              <Typography variant="subtitle2" color="text.secondary">Resolved</Typography>
+              <Typography variant="h4" color="success.main">{stats.resolved}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={2.4}>
+          <Card sx={{ borderTop: '3px solid #f44336' }}>
+            <CardContent>
+              <Typography variant="subtitle2" color="text.secondary">Critical</Typography>
+              <Typography variant="h4" color="error.main">{stats.critical}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
-      <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
-        <Table size="small">
+      {/* Filters */}
+      <Paper sx={{ p: 2, mb: 3 }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              placeholder="Search issues..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={statusFilter}
+                label="Status"
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <MenuItem value="all">All Status</MenuItem>
+                <MenuItem value="pending">Pending</MenuItem>
+                <MenuItem value="verified">Verified</MenuItem>
+                <MenuItem value="assigned">Assigned</MenuItem>
+                <MenuItem value="in_progress">In Progress</MenuItem>
+                <MenuItem value="resolved">Resolved</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Severity</InputLabel>
+              <Select
+                value={severityFilter}
+                label="Severity"
+                onChange={(e) => setSeverityFilter(e.target.value)}
+              >
+                <MenuItem value="all">All Severity</MenuItem>
+                <MenuItem value="critical">Critical</MenuItem>
+                <MenuItem value="high">High</MenuItem>
+                <MenuItem value="medium">Medium</MenuItem>
+                <MenuItem value="low">Low</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={2}>
+            <Button variant="outlined" startIcon={<FilterIcon />} fullWidth>
+              More Filters
+            </Button>
+          </Grid>
+        </Grid>
+      </Paper>
+
+      {/* Issues Table */}
+      <TableContainer component={Paper}>
+        <Table>
           <TableHead>
-            <TableRow sx={{ background: '#f9fafb' }}>
-              {['Title', 'Category', 'Severity', 'Status', 'Reported', '👍'].map(h => (
-                <TableCell key={h} sx={{ fontWeight: 700 }}>{h}</TableCell>
-              ))}
+            <TableRow sx={{ bgcolor: 'grey.50' }}>
+              <TableCell>ID</TableCell>
+              <TableCell>Title</TableCell>
+              <TableCell>Category</TableCell>
+              <TableCell>Severity</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Location</TableCell>
+              <TableCell>Assigned To</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {isLoading ? (
-              <TableRow><TableCell colSpan={6} align="center" sx={{ py: 4, color: 'text.secondary' }}>Loading…</TableCell></TableRow>
-            ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={6} align="center" sx={{ py: 4, color: 'text.secondary' }}>No issues found</TableCell></TableRow>
-            ) : filtered.map(issue => (
-              <TableRow
-                key={issue.issue_id}
-                hover
-                onClick={() => dispatch(selectIssue(issue))}
-                sx={{ cursor: 'pointer' }}
-              >
-                <TableCell sx={{ maxWidth: 240 }}>{issue.title}</TableCell>
-                <TableCell><Chip label={issue.category} size="small" variant="outlined" /></TableCell>
-                <TableCell><Chip label={issue.severity} size="small" color={SEV_COLOR[issue.severity]} /></TableCell>
-                <TableCell><Chip label={issue.status.replace('_', ' ')} size="small" color={STA_COLOR[issue.status]} /></TableCell>
-                <TableCell>{new Date(issue.reported_at).toLocaleDateString()}</TableCell>
-                <TableCell>{issue.upvotes}</TableCell>
+            {mockIssues.map((issue) => (
+              <TableRow key={issue.id} hover>
+                <TableCell>
+                  <Typography variant="body2" fontWeight={500}>
+                    {issue.id}
+                  </Typography>
+                </TableCell>
+                <TableCell>{issue.title}</TableCell>
+                <TableCell>
+                  <Chip label={issue.category} size="small" variant="outlined" />
+                </TableCell>
+                <TableCell>
+                  <Chip
+                    label={issue.severity.toUpperCase()}
+                    size="small"
+                    color={getSeverityColor(issue.severity) as any}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Chip
+                    label={issue.status.replace('_', ' ').toUpperCase()}
+                    size="small"
+                    color={getStatusColor(issue.status) as any}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" noWrap sx={{ maxWidth: 150 }}>
+                    {issue.location}
+                  </Typography>
+                </TableCell>
+                <TableCell>{issue.assignedTo}</TableCell>
+                <TableCell>
+                  <IconButton size="small" title="View Details">
+                    <ViewIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton size="small" title="Edit">
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Pagination */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+        <Pagination count={5} page={page} onChange={(e, v) => setPage(v)} color="primary" />
+      </Box>
     </Box>
   );
 };

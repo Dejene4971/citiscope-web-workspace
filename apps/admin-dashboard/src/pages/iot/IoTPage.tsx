@@ -1,86 +1,283 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useState } from 'react';
 import {
-  Box, Typography, Paper, Chip, Grid,
-  Table, TableHead, TableBody, TableRow, TableCell, TableContainer,
+  Box,
+  Paper,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Chip,
+  IconButton,
+  Switch,
+  FormControlLabel,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  LinearProgress,
+  Alert,
+  Button,
 } from '@mui/material';
-import { Sensors, Warning, CheckCircle, Build } from '@mui/icons-material';
-import { setSensors } from '../../features/iot/iotSlice';
-import type { RootState, AppDispatch } from '../../store/store';
-import type { IoTSensor } from '@citiscope/types';
+import {
+  Sensors as SensorsIcon,
+  WaterDrop as WaterIcon,
+  Vibration as VibrationIcon,
+  Bolt as BoltIcon,
+  Flood as FloodIcon,
+  Refresh as RefreshIcon,
+  Warning as WarningIcon,
+  CheckCircle as CheckCircleIcon,
+  Error as ErrorIcon,
+} from '@mui/icons-material';
 
-const MOCK_SENSORS: IoTSensor[] = [
-  { sensor_id: 'SEN-001', sensor_type: 'water_pressure', status: 'active',      latitude: 9.011, longitude: 38.746, last_update: '2026-03-28T10:00:00Z', metrics: { value: 12.5, unit: 'bar',  threshold: 20,  is_critical: true  }, location: { woreda_id: 'W-001', address: 'Bole Road' } },
-  { sensor_id: 'SEN-002', sensor_type: 'vibration',      status: 'active',      latitude: 9.033, longitude: 38.765, last_update: '2026-03-28T09:45:00Z', metrics: { value: 3.2,  unit: 'mm/s', threshold: 5,   is_critical: false }, location: { woreda_id: 'W-002', address: 'Meskel Square' } },
-  { sensor_id: 'SEN-003', sensor_type: 'electrical',     status: 'faulty',      latitude: 9.045, longitude: 38.712, last_update: '2026-03-27T18:00:00Z', metrics: { value: 0,    unit: 'V',    threshold: 220, is_critical: true  }, location: { woreda_id: 'W-003', address: 'Kazanchis' } },
-  { sensor_id: 'SEN-004', sensor_type: 'flood',          status: 'active',      latitude: 9.022, longitude: 38.733, last_update: '2026-03-28T08:30:00Z', metrics: { value: 0.4,  unit: 'm',    threshold: 1,   is_critical: false }, location: { woreda_id: 'W-001', address: 'Piassa' } },
-  { sensor_id: 'SEN-005', sensor_type: 'air_quality',    status: 'maintenance', latitude: 9.008, longitude: 38.754, last_update: '2026-03-26T12:00:00Z', metrics: { value: 85,   unit: 'AQI',  threshold: 100, is_critical: false }, location: { woreda_id: 'W-004', address: 'Merkato' } },
+// Mock IoT sensor data
+const mockSensors = [
+  {
+    id: 'SEN-001',
+    type: 'water_pressure',
+    location: 'Bole Woreda, Addis Ababa',
+    status: 'active',
+    battery: 87,
+    lastUpdate: '2024-03-31T14:30:00Z',
+    metrics: { value: 42, unit: 'psi', threshold: 35, isCritical: true },
+  },
+  {
+    id: 'SEN-002',
+    type: 'vibration',
+    location: 'Kirkos Woreda, Addis Ababa',
+    status: 'active',
+    battery: 92,
+    lastUpdate: '2024-03-31T14:28:00Z',
+    metrics: { value: 2.3, unit: 'mm/s', threshold: 5, isCritical: false },
+  },
+  {
+    id: 'SEN-003',
+    type: 'electrical',
+    location: 'Yeka Woreda, Addis Ababa',
+    status: 'maintenance',
+    battery: 45,
+    lastUpdate: '2024-03-31T12:00:00Z',
+    metrics: { value: 0, unit: 'A', threshold: 100, isCritical: false },
+  },
+  {
+    id: 'SEN-004',
+    type: 'flood',
+    location: 'Gulele Woreda, Addis Ababa',
+    status: 'active',
+    battery: 78,
+    lastUpdate: '2024-03-31T14:32:00Z',
+    metrics: { value: 15, unit: 'cm', threshold: 30, isCritical: false },
+  },
+  {
+    id: 'SEN-005',
+    type: 'water_pressure',
+    location: 'Lideta Woreda, Addis Ababa',
+    status: 'faulty',
+    battery: 12,
+    lastUpdate: '2024-03-30T08:00:00Z',
+    metrics: { value: 0, unit: 'psi', threshold: 35, isCritical: true },
+  },
 ];
 
-const STATUS_COLOR: Record<string, 'success' | 'error' | 'warning' | 'default'> = {
-  active: 'success', faulty: 'error', maintenance: 'warning', inactive: 'default',
+const getSensorIcon = (type: string) => {
+  switch (type) {
+    case 'water_pressure': return <WaterIcon />;
+    case 'vibration': return <VibrationIcon />;
+    case 'electrical': return <BoltIcon />;
+    case 'flood': return <FloodIcon />;
+    default: return <SensorsIcon />;
+  }
+};
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'active': return 'success';
+    case 'maintenance': return 'warning';
+    case 'faulty': return 'error';
+    default: return 'default';
+  }
+};
+
+const getBatteryColor = (level: number) => {
+  if (level > 50) return 'success';
+  if (level > 20) return 'warning';
+  return 'error';
 };
 
 export const IoTPage: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const sensors = useSelector((s: RootState) => s.iot.sensors) as IoTSensor[];
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [selectedSensor, setSelectedSensor] = useState<string | null>(null);
 
-  useEffect(() => { dispatch(setSensors(MOCK_SENSORS)); }, [dispatch]);
-
-  const active   = sensors.filter(s => s.status === 'active').length;
-  const faulty   = sensors.filter(s => s.status === 'faulty').length;
-  const critical = sensors.filter(s => s.metrics.is_critical).length;
+  const activeSensors = mockSensors.filter(s => s.status === 'active').length;
+  const criticalAlerts = mockSensors.filter(s => s.metrics.isCritical).length;
+  const lowBattery = mockSensors.filter(s => s.battery < 30).length;
 
   return (
     <Box>
-      <Typography variant="h5" fontWeight={700} gutterBottom>IoT Sensors</Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Real-time infrastructure sensor monitoring across Addis Ababa
-      </Typography>
+      {/* Page Header */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Box>
+          <Typography variant="h4" gutterBottom sx={{ fontWeight: 600 }}>
+            IoT Sensor Network
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Real-time monitoring of critical infrastructure sensors
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <FormControlLabel
+            control={<Switch checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} />}
+            label="Auto-refresh"
+          />
+          <Button variant="outlined" startIcon={<RefreshIcon />} size="small">
+            Refresh
+          </Button>
+        </Box>
+      </Box>
 
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        {[
-          { label: 'Total',    value: sensors.length, icon: <Sensors />,     color: '#1976d2' },
-          { label: 'Active',   value: active,          icon: <CheckCircle />, color: '#2e7d32' },
-          { label: 'Faulty',   value: faulty,          icon: <Build />,       color: '#ed6c02' },
-          { label: 'Critical', value: critical,         icon: <Warning />,     color: '#d32f2f' },
-        ].map(c => (
-          <Grid item xs={6} sm={3} key={c.label}>
-            <Paper sx={{ p: 2, borderLeft: `4px solid ${c.color}`, borderRadius: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: c.color, mb: 0.5 }}>
-                {c.icon}
-                <Typography variant="body2" color="text.secondary">{c.label}</Typography>
+      {/* Stats Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography variant="subtitle2" color="text.secondary">Active Sensors</Typography>
+                <SensorsIcon color="primary" />
               </Box>
-              <Typography variant="h4" fontWeight={700}>{c.value}</Typography>
-            </Paper>
-          </Grid>
-        ))}
+              <Typography variant="h4">{activeSensors}</Typography>
+              <Typography variant="caption" color="text.secondary">of {mockSensors.length} total</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ borderTop: '3px solid #f44336' }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography variant="subtitle2" color="text.secondary">Critical Alerts</Typography>
+                <WarningIcon color="error" />
+              </Box>
+              <Typography variant="h4" color="error.main">{criticalAlerts}</Typography>
+              <Typography variant="caption">Requires immediate attention</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ borderTop: '3px solid #ff9800' }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography variant="subtitle2" color="text.secondary">Low Battery</Typography>
+                <ErrorIcon color="warning" />
+              </Box>
+              <Typography variant="h4" color="warning.main">{lowBattery}</Typography>
+              <Typography variant="caption">Need maintenance</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography variant="subtitle2" color="text.secondary">Network Uptime</Typography>
+                <CheckCircleIcon color="success" />
+              </Box>
+              <Typography variant="h4">98.5%</Typography>
+              <Typography variant="caption">Last 24 hours</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
       </Grid>
 
-      <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
-        <Table size="small">
-          <TableHead>
-            <TableRow sx={{ background: '#f9fafb' }}>
-              {['Sensor ID', 'Type', 'Status', 'Value', 'Threshold', 'Alert', 'Last Update', 'Location'].map(h => (
-                <TableCell key={h} sx={{ fontWeight: 700 }}>{h}</TableCell>
-              ))}
+      {/* Critical Alerts Section */}
+      {criticalAlerts > 0 && (
+        <Alert severity="error" sx={{ mb: 3 }} icon={<WarningIcon />}>
+          <Typography variant="subtitle2">Critical Alerts Detected</Typography>
+          <Typography variant="body2">{criticalAlerts} sensor(s) are reporting values above critical thresholds</Typography>
+        </Alert>
+      )}
+
+      {/* Sensors Table */}
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead sx={{ bgcolor: 'grey.50' }}>
+            <TableRow>
+              <TableCell>Sensor ID</TableCell>
+              <TableCell>Type</TableCell>
+              <TableCell>Location</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Battery</TableCell>
+              <TableCell>Current Value</TableCell>
+              <TableCell>Last Update</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {sensors.map(s => (
-              <TableRow key={s.sensor_id} hover>
-                <TableCell>{s.sensor_id}</TableCell>
-                <TableCell>{s.sensor_type.replace('_', ' ')}</TableCell>
-                <TableCell><Chip label={s.status} size="small" color={STATUS_COLOR[s.status]} /></TableCell>
-                <TableCell>{s.metrics.value} {s.metrics.unit}</TableCell>
-                <TableCell>{s.metrics.threshold} {s.metrics.unit}</TableCell>
+            {mockSensors.map((sensor) => (
+              <TableRow 
+                key={sensor.id} 
+                hover
+                sx={{ 
+                  bgcolor: sensor.metrics.isCritical ? 'error.light' : 'inherit',
+                  '&:hover': { bgcolor: sensor.metrics.isCritical ? 'error.light' : 'action.hover' }
+                }}
+              >
                 <TableCell>
-                  {s.metrics.is_critical
-                    ? <Chip label="⚠️ Critical" size="small" color="error" />
-                    : <Chip label="Normal" size="small" color="success" />}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {getSensorIcon(sensor.type)}
+                    <Typography variant="body2" fontWeight={500}>{sensor.id}</Typography>
+                  </Box>
                 </TableCell>
-                <TableCell>{new Date(s.last_update).toLocaleDateString()}</TableCell>
-                <TableCell>{s.location.address}</TableCell>
+                <TableCell>
+                  <Chip 
+                    label={sensor.type.replace('_', ' ').toUpperCase()} 
+                    size="small" 
+                    variant="outlined" 
+                  />
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" noWrap sx={{ maxWidth: 180 }}>
+                    {sensor.location}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Chip 
+                    label={sensor.status.toUpperCase()} 
+                    size="small" 
+                    color={getStatusColor(sensor.status) as any}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <LinearProgress 
+                      variant="determinate" 
+                      value={sensor.battery} 
+                      sx={{ width: 60, height: 6, borderRadius: 3 }}
+                      color={getBatteryColor(sensor.battery) as any}
+                    />
+                    <Typography variant="caption">{sensor.battery}%</Typography>
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Box>
+                    <Typography variant="body2">
+                      {sensor.metrics.value} {sensor.metrics.unit}
+                    </Typography>
+                    {sensor.metrics.isCritical && (
+                      <Chip label="Critical" size="small" color="error" sx={{ mt: 0.5 }} />
+                    )}
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="caption">
+                    {new Date(sensor.lastUpdate).toLocaleTimeString()}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <IconButton size="small" title="View Details">
+                    <SensorsIcon fontSize="small" />
+                  </IconButton>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
