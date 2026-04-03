@@ -31,6 +31,7 @@ import {
   Settings as SettingsIcon,
   Logout as LogoutIcon,
   ChevronLeft as ChevronLeftIcon,
+  Timeline as TimelineIcon,
 } from '@mui/icons-material';
 import { logout } from '../features/auth/authSlice';
 import { RootState } from '../store/store';
@@ -38,11 +39,12 @@ import { RootState } from '../store/store';
 const drawerWidth = 280;
 
 const menuItems = [
-  { path: '/', label: 'Dashboard', icon: DashboardIcon },
-  { path: '/map', label: 'Map View', icon: MapIcon },
-  { path: '/analytics', label: 'Analytics', icon: AssessmentIcon },
-  { path: '/issues', label: 'Issues', icon: ReportIcon },
-  { path: '/iot', label: 'IoT Sensors', icon: SensorsIcon },
+  { path: '/',           label: 'Dashboard',    icon: DashboardIcon  },
+  { path: '/map',        label: 'Map View',     icon: MapIcon        },
+  { path: '/analytics',  label: 'Analytics',    icon: AssessmentIcon },
+  { path: '/predictive', label: 'Predictive AI',icon: TimelineIcon   },
+  { path: '/issues',     label: 'Issues',       icon: ReportIcon     },
+  { path: '/iot',        label: 'IoT Sensors',  icon: SensorsIcon    },
 ];
 
 export const DashboardLayout: React.FC = () => {

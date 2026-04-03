@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import {
   Notifications, Person, Settings, Logout,
-  Dashboard, Map, List, BarChart, Sensors, Menu as MenuIcon,
+  Dashboard, Map, List, BarChart, Sensors, Menu as MenuIcon, Timeline,
 } from '@mui/icons-material';
 import { logout } from '../features/auth/authSlice';
 import type { RootState, AppDispatch } from '../store/store';
@@ -16,7 +16,8 @@ const NAV_ITEMS = [
   { path: '/',          label: 'Dashboard',   icon: <Dashboard /> },
   { path: '/map',       label: 'Map',         icon: <Map /> },
   { path: '/issues',    label: 'Issues',      icon: <List /> },
-  { path: '/analytics', label: 'Analytics',   icon: <BarChart /> },
+  { path: '/analytics',  label: 'Analytics',        icon: <BarChart /> },
+  { path: '/predictive', label: 'Predictive AI',     icon: <Timeline /> },
   { path: '/iot',       label: 'IoT Sensors', icon: <Sensors /> },
 ];
 

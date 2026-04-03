@@ -7,6 +7,7 @@ import { DashboardPage } from '../pages/dashboard/DashboardPage';
 import { MapViewPage } from '../pages/map/MapViewPage';
 import { IssuesPage } from '../pages/issues/IssuesPage';
 import { AnalyticsPage } from '../pages/analytics/AnalyticsPage';
+import { PredictiveAnalyticsPage } from '../pages/analytics/PredictiveAnalyticsPage';
 import { IoTPage } from '../pages/iot/IoTPage';
 import { AppShell } from './AppShell';
 
@@ -27,6 +28,7 @@ function AppRoutes() {
         <Route path="map" element={<MapViewPage />} />
         <Route path="issues" element={<IssuesPage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
+        <Route path="predictive" element={<PredictiveAnalyticsPage />} />
         <Route path="iot" element={<IoTPage />} />
       </Route>
     </Routes>

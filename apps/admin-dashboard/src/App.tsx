@@ -6,6 +6,8 @@ import { LoginPage } from './pages/auth/LoginPage';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { MapViewPage } from './pages/map/MapViewPage';
 import { AnalyticsPage } from './pages/analytics/AnalyticsPage';
+import { PredictiveAnalyticsPage } from './pages/analytics/PredictiveAnalyticsPage';
+
 import { IssuesPage } from './pages/issues/IssuesPage';
 import { IoTPage } from './pages/iot/IoTPage';
 import { DashboardLayout } from './layouts/DashboardLayout';
@@ -31,6 +33,7 @@ function App() {
             <Route path="/" element={<DashboardPage />} />
             <Route path="/map" element={<MapViewPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/predictive" element={<PredictiveAnalyticsPage />} />
             <Route path="/issues" element={<IssuesPage />} />
             <Route path="/iot" element={<IoTPage />} />
           </Route>
