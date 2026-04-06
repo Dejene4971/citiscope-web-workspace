@@ -7,12 +7,14 @@ import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { MapViewPage } from './pages/map/MapViewPage';
 import { AnalyticsPage } from './pages/analytics/AnalyticsPage';
 import { PredictiveAnalyticsPage } from './pages/analytics/PredictiveAnalyticsPage';
-
 import { IssuesPage } from './pages/issues/IssuesPage';
 import { IoTPage } from './pages/iot/IoTPage';
+import { ProfilePage } from './pages/profile/ProfilePage';
+
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
+import { ToastNotifications } from './components/notifications/ToastNotifications';
 
 function App() {
   const { isAuthenticated, isLoading } = useSelector((state: RootState) => state.auth);
@@ -36,6 +38,8 @@ function App() {
             <Route path="/predictive" element={<PredictiveAnalyticsPage />} />
             <Route path="/issues" element={<IssuesPage />} />
             <Route path="/iot" element={<IoTPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+
           </Route>
         </Routes>
       </BrowserRouter>

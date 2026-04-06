@@ -183,7 +183,7 @@ export const DashboardLayout: React.FC = () => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem onClick={handleMenuClose}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate('/profile'); }}>
           <PersonIcon sx={{ mr: 1 }} /> Profile
         </MenuItem>
         <MenuItem onClick={handleMenuClose}>
