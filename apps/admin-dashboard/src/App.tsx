@@ -39,9 +39,10 @@ function App() {
             <Route path="/issues" element={<IssuesPage />} />
             <Route path="/iot" element={<IoTPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
+        <ToastNotifications />
       </BrowserRouter>
     </ErrorBoundary>
   );

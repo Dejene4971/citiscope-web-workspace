@@ -30,6 +30,7 @@ function AppRoutes() {
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="predictive" element={<PredictiveAnalyticsPage />} />
         <Route path="iot" element={<IoTPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
   );

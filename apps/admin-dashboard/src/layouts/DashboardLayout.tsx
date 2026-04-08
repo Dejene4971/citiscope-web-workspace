@@ -42,7 +42,7 @@ const menuItems = [
   { path: '/',           label: 'Dashboard',    icon: DashboardIcon  },
   { path: '/map',        label: 'Map View',     icon: MapIcon        },
   { path: '/analytics',  label: 'Analytics',    icon: AssessmentIcon },
-  { path: '/predictive', label: 'Predictive AI',icon: TimelineIcon   },
+  { path: '/predictive', label: 'Predictive AI',    icon: TimelineIcon   },
   { path: '/issues',     label: 'Issues',       icon: ReportIcon     },
   { path: '/iot',        label: 'IoT Sensors',  icon: SensorsIcon    },
 ];
