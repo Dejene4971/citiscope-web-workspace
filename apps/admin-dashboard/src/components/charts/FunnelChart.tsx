@@ -1,45 +1,61 @@
 import React from 'react';
-import { Box, Typography, Paper } from '@mui/material';
+import { Paper, Typography, Box, LinearProgress, Grid } from '@mui/material';
 
 interface FunnelStage {
-  label: string;
-  value: number;
+  name: string;
+  count: number;
   color: string;
 }
 
 interface FunnelChartProps {
-  stages: FunnelStage[];
-  title?: string;
+  data: FunnelStage[];
+  title: string;
 }
 
-/**
- * Pure SVG funnel — shows issue resolution pipeline drop-off.
- */
-export const FunnelChart: React.FC<FunnelChartProps> = ({ stages, title }) => {
-  const max = Math.max(...stages.map(s => s.value));
-  const barH = 44;
-  const gap = 6;
-  const totalH = stages.length * (barH + gap);
+export const FunnelChart: React.FC<FunnelChartProps> = ({ data, title }) => {
+  const maxCount = Math.max(...data.map(d => d.count));
 
   return (
-    <Paper sx={{ p: 3, borderRadius: 2 }}>
-      {title && <Typography variant="h6" fontWeight={600} gutterBottom>{title}</Typography>}
-      <svg width="100%" height={totalH} viewBox={`0 0 400 ${totalH}`}>
-        {stages.map((s, i) => {
-          const w = (s.value / max) * 360;
-          const x = (400 - w) / 2;
-          const y = i * (barH + gap);
-          const pct = max > 0 ? Math.round((s.value / stages[0].value) * 100) : 0;
+    <Paper sx={{ p: 2 }}>
+      <Typography variant="h6" gutterBottom>{title}</Typography>
+      <Box sx={{ mt: 3 }}>
+        {data.map((stage, index) => {
+          const percentage = (stage.count / maxCount) * 100;
+          const conversionRate = index > 0 ? ((stage.count / data[index - 1].count) * 100).toFixed(1) : null;
+          
           return (
-            <g key={s.label}>
-              <rect x={x} y={y} width={w} height={barH} rx={6} fill={s.color} opacity={0.85} />
-              <text x={200} y={y + barH / 2 + 5} textAnchor="middle" fill="#fff" fontSize={13} fontWeight="bold">
-                {s.label}: {s.value.toLocaleString()} ({pct}%)
-              </text>
-            </g>
+            <Box key={stage.name} sx={{ mb: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="body2" fontWeight={500}>{stage.name}</Typography>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Typography variant="body2" color="text.secondary">{stage.count} issues</Typography>
+                  {conversionRate && (
+                    <Typography variant="caption" color="success.main">
+                      {conversionRate}% conversion
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+              <LinearProgress
+                variant="determinate"
+                value={percentage}
+                sx={{
+                  height: 32,
+                  borderRadius: 4,
+                  backgroundColor: '#e0e0e0',
+                  '& .MuiLinearProgress-bar': {
+                    backgroundColor: stage.color,
+                    borderRadius: 4,
+                  },
+                }}
+              />
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                {percentage.toFixed(1)}% of total
+              </Typography>
+            </Box>
           );
         })}
-      </svg>
+      </Box>
     </Paper>
   );
 };

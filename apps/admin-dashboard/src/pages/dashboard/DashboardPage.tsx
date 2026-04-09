@@ -66,11 +66,11 @@ const STACKED_DATASETS = [
 ];
 
 const FUNNEL_DATA = [
-  { label: 'Reported',    value: 680, color: '#1976d2' },
-  { label: 'Verified',    value: 520, color: '#0288d1' },
-  { label: 'Assigned',    value: 410, color: '#0097a7' },
-  { label: 'In Progress', value: 310, color: '#00897b' },
-  { label: 'Resolved',    value: 240, color: '#2e7d32' },
+  { name: 'Reported',    count: 680, color: '#1976d2' },
+  { name: 'Verified',    count: 520, color: '#0288d1' },
+  { name: 'Assigned',    count: 410, color: '#0097a7' },
+  { name: 'In Progress', count: 310, color: '#00897b' },
+  { name: 'Resolved',    count: 240, color: '#2e7d32' },
 ];
 
 const TREEMAP_DATA = [
@@ -215,7 +215,7 @@ export const DashboardPage: React.FC = () => {
       <TabPanel value={tab} index={2}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
-            <FunnelChart stages={FUNNEL_DATA} title="Issue Resolution Pipeline" />
+            <FunnelChart data={FUNNEL_DATA} title="Issue Resolution Pipeline" />
           </Grid>
           <Grid item xs={12} md={6}>
             <SankeyDiagram flows={SANKEY_FLOWS} title="Issue Flow Diagram" />

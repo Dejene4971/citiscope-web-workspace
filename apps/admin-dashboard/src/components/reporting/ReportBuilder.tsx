@@ -1,101 +1,244 @@
 import React, { useState } from 'react';
 import {
-  Paper, Typography, Box, Grid, FormControlLabel, Checkbox,
-  TextField, Button, Chip, Divider, Select, MenuItem, FormControl, InputLabel,
+  Paper,
+  Typography,
+  Box,
+  TextField,
+  Button,
+  Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Chip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Checkbox,
+  Alert,
+  Stepper,
+  Step,
+  StepLabel,
 } from '@mui/material';
-import { Download, Preview } from '@mui/icons-material';
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
-import { MONTHLY_LABELS, REPORTED_MONTHLY, RESOLVED_MONTHLY, RISK_DATA } from '../../data/mockAnalyticsData';
+import {
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  Download as DownloadIcon,
+  Schedule as ScheduleIcon,
+  Save as SaveIcon,
+  Description as ReportIcon,
+} from '@mui/icons-material';
 
-const SECTIONS = [
-  { id: 'summary',     label: 'Executive Summary'    },
-  { id: 'issues',      label: 'Issue Statistics'     },
-  { id: 'risk',        label: 'Risk Assessment'      },
-  { id: 'maintenance', label: 'Maintenance Schedule' },
-  { id: 'resources',   label: 'Resource Allocation'  },
-];
+interface ReportSection {
+  id: string;
+  title: string;
+  type: 'chart' | 'table' | 'summary' | 'metrics';
+  dataSource: string;
+}
 
-const FORMATS = ['Excel (.xlsx)', 'CSV (.csv)', 'JSON (.json)'];
+interface ScheduledReport {
+  id: string;
+  name: string;
+  frequency: 'daily' | 'weekly' | 'monthly';
+  time: string;
+  recipients: string[];
+  format: 'pdf' | 'excel';
+}
 
 export const ReportBuilder: React.FC = () => {
-  const [selected, setSelected] = useState<string[]>(['summary', 'issues']);
-  const [format, setFormat] = useState('Excel (.xlsx)');
-  const [title, setTitle] = useState('CitiScope Infrastructure Report');
-  const [generated, setGenerated] = useState(false);
+  const [sections, setSections] = useState<ReportSection[]>([]);
+  const [reportName, setReportName] = useState('');
+  const [scheduledReports, setScheduledReports] = useState<ScheduledReport[]>([]);
+  const [activeStep, setActiveStep] = useState(0);
+  const [openSchedule, setOpenSchedule] = useState(false);
+  const [newSchedule, setNewSchedule] = useState<Partial<ScheduledReport>>({});
 
-  const toggle = (id: string) =>
-    setSelected(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
+  const steps = ['Select Data Sources', 'Customize Layout', 'Configure Schedule', 'Generate Report'];
 
-  const generate = () => {
-    const rows: Record<string, unknown>[] = [];
+  const availableSections: ReportSection[] = [
+    { id: 'issues-trend',          title: 'Issues Trend Chart',       type: 'chart',   dataSource: 'issues'     },
+    { id: 'category-distribution', title: 'Category Distribution',    type: 'chart',   dataSource: 'categories' },
+    { id: 'performance-metrics',   title: 'Performance Metrics',      type: 'metrics', dataSource: 'metrics'    },
+    { id: 'top-woredas',           title: 'Top Performing Woredas',   type: 'table',   dataSource: 'woredas'    },
+    { id: 'resolution-timeline',   title: 'Resolution Timeline',      type: 'chart',   dataSource: 'timeline'   },
+  ];
 
-    if (selected.includes('summary')) {
-      rows.push({ Section: 'Summary', Metric: 'Total Reported', Value: REPORTED_MONTHLY.reduce((a, b) => a + b, 0) });
-      rows.push({ Section: 'Summary', Metric: 'Total Resolved', Value: RESOLVED_MONTHLY.reduce((a, b) => a + b, 0) });
-    }
-    if (selected.includes('issues')) {
-      MONTHLY_LABELS.forEach((m, i) => rows.push({ Section: 'Issues', Month: m, Reported: REPORTED_MONTHLY[i], Resolved: RESOLVED_MONTHLY[i] }));
-    }
-    if (selected.includes('risk')) {
-      RISK_DATA.forEach(r => rows.push({ Section: 'Risk', Category: r.category, Score: r.score, Trend: `${r.trend}%` }));
-    }
+  const handleAddSection = (section: typeof availableSections[0]) => {
+    setSections([...sections, { ...section, id: `${section.id}-${Date.now()}` }]);
+  };
 
-    if (format.startsWith('Excel')) {
-      const ws = XLSX.utils.json_to_sheet(rows);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Report');
-      const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-      saveAs(new Blob([buf], { type: 'application/octet-stream' }), `${title.replace(/\s+/g, '_')}.xlsx`);
-    } else if (format.startsWith('CSV')) {
-      const csv = [Object.keys(rows[0]).join(','), ...rows.map(r => Object.values(r).join(','))].join('\n');
-      saveAs(new Blob([csv], { type: 'text/csv' }), `${title.replace(/\s+/g, '_')}.csv`);
-    } else {
-      saveAs(new Blob([JSON.stringify(rows, null, 2)], { type: 'application/json' }), `${title.replace(/\s+/g, '_')}.json`);
+  const handleRemoveSection = (id: string) => {
+    setSections(sections.filter(s => s.id !== id));
+  };
+
+  const handleScheduleReport = () => {
+    if (newSchedule.name && newSchedule.frequency && newSchedule.time) {
+      setScheduledReports([
+        ...scheduledReports,
+        {
+          id: Date.now().toString(),
+          name: newSchedule.name,
+          frequency: newSchedule.frequency as any,
+          time: newSchedule.time,
+          recipients: newSchedule.recipients || [],
+          format: newSchedule.format || 'pdf',
+        },
+      ]);
+      setOpenSchedule(false);
+      setNewSchedule({});
     }
-    setGenerated(true);
-    setTimeout(() => setGenerated(false), 3000);
   };
 
   return (
-    <Paper sx={{ p: 3, borderRadius: 2 }}>
-      <Typography variant="h6" fontWeight={700} gutterBottom>Report Builder</Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Select sections and export format to generate a custom report
-      </Typography>
-
-      <TextField
-        fullWidth label="Report Title" value={title}
-        onChange={e => setTitle(e.target.value)} size="small" sx={{ mb: 3 }}
-      />
-
-      <Typography variant="subtitle2" gutterBottom>Include Sections</Typography>
-      <Grid container spacing={1} sx={{ mb: 3 }}>
-        {SECTIONS.map(s => (
-          <Grid item xs={12} sm={6} key={s.id}>
-            <FormControlLabel
-              control={<Checkbox size="small" checked={selected.includes(s.id)} onChange={() => toggle(s.id)} />}
-              label={s.label}
-            />
-          </Grid>
+    <Box>
+      <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+        {steps.map((label) => (
+          <Step key={label}>
+            <StepLabel>{label}</StepLabel>
+          </Step>
         ))}
+      </Stepper>
+
+      <Grid container spacing={3}>
+        {/* Available Sections Panel */}
+        <Grid item xs={12} md={4}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom>Available Components</Typography>
+            <List>
+              {availableSections.map((section) => (
+                <ListItem
+                  key={section.id}
+                  secondaryAction={
+                    <IconButton edge="end" onClick={() => handleAddSection(section)}>
+                      <AddIcon />
+                    </IconButton>
+                  }
+                >
+                  <ListItemIcon><ReportIcon /></ListItemIcon>
+                  <ListItemText primary={section.title} secondary={section.type} />
+                </ListItem>
+              ))}
+            </List>
+          </Paper>
+        </Grid>
+
+        {/* Report Builder Panel */}
+        <Grid item xs={12} md={8}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom>Report Builder</Typography>
+            <TextField
+              fullWidth
+              label="Report Name"
+              value={reportName}
+              onChange={(e) => setReportName(e.target.value)}
+              sx={{ mb: 2 }}
+            />
+            
+            {sections.length === 0 ? (
+              <Alert severity="info">Add components to build your report</Alert>
+            ) : (
+              <List>
+                {sections.map((section) => (
+                  <ListItem
+                    key={section.id}
+                    secondaryAction={
+                      <IconButton edge="end" onClick={() => handleRemoveSection(section.id)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    }
+                  >
+                    <ListItemText primary={section.title} secondary={`Type: ${section.type}`} />
+                  </ListItem>
+                ))}
+              </List>
+            )}
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+              <Button variant="outlined" startIcon={<ScheduleIcon />} onClick={() => setOpenSchedule(true)}>
+                Schedule Report
+              </Button>
+              <Button variant="contained" startIcon={<DownloadIcon />} disabled={sections.length === 0}>
+                Generate Report
+              </Button>
+            </Box>
+          </Paper>
+        </Grid>
       </Grid>
 
-      <Divider sx={{ mb: 2 }} />
+      {/* Scheduled Reports */}
+      {scheduledReports.length > 0 && (
+        <Paper sx={{ p: 2, mt: 3 }}>
+          <Typography variant="h6" gutterBottom>Scheduled Reports</Typography>
+          <List>
+            {scheduledReports.map((report) => (
+              <ListItem key={report.id}>
+                <ListItemIcon><ScheduleIcon /></ListItemIcon>
+                <ListItemText
+                  primary={report.name}
+                  secondary={`${report.frequency} at ${report.time} · Format: ${report.format.toUpperCase()}`}
+                />
+                <Chip label="Active" size="small" color="success" />
+              </ListItem>
+            ))}
+          </List>
+        </Paper>
+      )}
 
-      <FormControl size="small" fullWidth sx={{ mb: 3 }}>
-        <InputLabel>Export Format</InputLabel>
-        <Select value={format} label="Export Format" onChange={e => setFormat(e.target.value)}>
-          {FORMATS.map(f => <MenuItem key={f} value={f}>{f}</MenuItem>)}
-        </Select>
-      </FormControl>
-
-      <Box sx={{ display: 'flex', gap: 2 }}>
-        <Button variant="contained" startIcon={<Download />} onClick={generate} disabled={selected.length === 0}>
-          Generate Report
-        </Button>
-        {generated && <Chip label="✓ Downloaded" color="success" size="small" sx={{ alignSelf: 'center' }} />}
-      </Box>
-    </Paper>
+      {/* Schedule Dialog */}
+      <Dialog open={openSchedule} onClose={() => setOpenSchedule(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Schedule Report</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="Report Name"
+            value={newSchedule.name || ''}
+            onChange={(e) => setNewSchedule({ ...newSchedule, name: e.target.value })}
+            sx={{ mt: 1, mb: 2 }}
+          />
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Frequency</InputLabel>
+            <Select
+              value={newSchedule.frequency || ''}
+              label="Frequency"
+              onChange={(e) => setNewSchedule({ ...newSchedule, frequency: e.target.value as any })}
+            >
+              <MenuItem value="daily">Daily</MenuItem>
+              <MenuItem value="weekly">Weekly</MenuItem>
+              <MenuItem value="monthly">Monthly</MenuItem>
+            </Select>
+          </FormControl>
+          <TextField
+            fullWidth
+            label="Time (24h)"
+            type="time"
+            value={newSchedule.time || ''}
+            onChange={(e) => setNewSchedule({ ...newSchedule, time: e.target.value })}
+            sx={{ mb: 2 }}
+            InputLabelProps={{ shrink: true }}
+          />
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Format</InputLabel>
+            <Select
+              value={newSchedule.format || 'pdf'}
+              label="Format"
+              onChange={(e) => setNewSchedule({ ...newSchedule, format: e.target.value as any })}
+            >
+              <MenuItem value="pdf">PDF Document</MenuItem>
+              <MenuItem value="excel">Excel Spreadsheet</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenSchedule(false)}>Cancel</Button>
+          <Button variant="contained" onClick={handleScheduleReport}>Schedule</Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 };
