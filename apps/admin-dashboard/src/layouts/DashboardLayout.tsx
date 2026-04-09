@@ -35,17 +35,20 @@ import {
 } from '@mui/icons-material';
 import { logout } from '../features/auth/authSlice';
 import { RootState } from '../store/store';
+import { auditService } from '../services/auditService';
 
 const drawerWidth = 280;
 
-const menuItems = [
-  { path: '/',           label: 'Dashboard',    icon: DashboardIcon  },
-  { path: '/map',        label: 'Map View',     icon: MapIcon        },
-  { path: '/analytics',  label: 'Analytics',    icon: AssessmentIcon },
-  { path: '/predictive', label: 'Predictive AI',    icon: TimelineIcon   },
-  { path: '/issues',     label: 'Issues',       icon: ReportIcon     },
-  { path: '/iot',        label: 'IoT Sensors',  icon: SensorsIcon    },
-];
+type AdminRole = 'federal_admin' | 'regional_admin' | 'zonal_admin' | 'woreda_admin';
+
+const ALL_MENU_ITEMS = [
+  { path: '/',           label: 'Dashboard',    icon: DashboardIcon,  roles: ['federal_admin', 'regional_admin', 'zonal_admin', 'woreda_admin'] },
+  { path: '/map',        label: 'Map View',     icon: MapIcon,        roles: ['federal_admin', 'regional_admin', 'zonal_admin', 'woreda_admin'] },
+  { path: '/issues',     label: 'Issues',       icon: ReportIcon,     roles: ['federal_admin', 'regional_admin', 'zonal_admin', 'woreda_admin'] },
+  { path: '/analytics',  label: 'Analytics',    icon: AssessmentIcon, roles: ['federal_admin', 'regional_admin'] },
+  { path: '/predictive', label: 'Predictive AI',icon: TimelineIcon,   roles: ['federal_admin', 'regional_admin'] },
+  { path: '/iot',        label: 'IoT Sensors',  icon: SensorsIcon,    roles: ['federal_admin', 'regional_admin', 'zonal_admin'] },
+] as const;
 
 export const DashboardLayout: React.FC = () => {
   const theme = useTheme();
@@ -53,6 +56,15 @@ export const DashboardLayout: React.FC = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  // Resolve role — handle nested user object shape
+  const userData = (user as any)?.user ?? user;
+  const role: AdminRole = userData?.role ?? 'woreda_admin';
+
+  // Filter menu by role
+  const menuItems = ALL_MENU_ITEMS.filter(item =>
+    (item.roles as readonly string[]).includes(role)
+  );
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -69,6 +81,7 @@ export const DashboardLayout: React.FC = () => {
   };
 
   const handleLogout = () => {
+    auditService.log('USER_LOGOUT', { userId: userData?.user_id, userRole: role });
     dispatch(logout());
     navigate('/login');
     handleMenuClose();

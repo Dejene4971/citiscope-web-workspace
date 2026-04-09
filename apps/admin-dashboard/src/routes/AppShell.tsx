@@ -9,7 +9,7 @@ import {
   Notifications, Person, Settings, Logout,
   Dashboard, Map, List, BarChart, Sensors, Menu as MenuIcon, Timeline,
 } from '@mui/icons-material';
-import { logout } from '../features/auth/authSlice';
+import { UnifiedNotificationSystem } from '../components/notifications/UnifiedNotificationSystem';
 import type { RootState, AppDispatch } from '../store/store';
 
 const NAV_ITEMS = [
@@ -113,9 +113,7 @@ export const AppShell: React.FC = () => {
               {NAV_ITEMS.find(n => n.path === location.pathname)?.label ?? 'CitiScope'}
             </Typography>
 
-            <Tooltip title="Notifications">
-              <IconButton><Notifications /></IconButton>
-            </Tooltip>
+            <UnifiedNotificationSystem />
 
             <Tooltip title={displayName}>
               <IconButton onClick={e => setMenuAnchor(e.currentTarget)} sx={{ ml: 1 }}>

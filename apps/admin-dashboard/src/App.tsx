@@ -15,6 +15,8 @@ import { DashboardLayout } from './layouts/DashboardLayout';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
 import { ToastNotifications } from './components/notifications/ToastNotifications';
+import { UnifiedNotificationSystem } from './components/notifications/UnifiedNotificationSystem';
+import { IssueDetailModal } from './components/modals/IssueDetailModal';
 
 function App() {
   const { isAuthenticated, isLoading } = useSelector((state: RootState) => state.auth);
@@ -43,6 +45,7 @@ function App() {
           </Route>
         </Routes>
         <ToastNotifications />
+        <IssueDetailModal />
       </BrowserRouter>
     </ErrorBoundary>
   );

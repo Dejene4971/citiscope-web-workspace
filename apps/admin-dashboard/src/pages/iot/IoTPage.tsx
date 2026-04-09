@@ -55,8 +55,9 @@ import {
 } from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
 import { RootState } from '../../store/store';
-import { setSensors, addAlert, acknowledgeAlert, setConnectionStatus } from '../../features/iot/iotSlice';
+import { setSensors, acknowledgeAlert, setConnectionStatus } from '../../features/iot/iotSlice';
 import { mockSensors, mockNewAlerts } from '../../data/mockIoTData';
+import { iotIngestionService } from '../../services/iotIngestionService';
 
 ChartJS.register(
   CategoryScale,
@@ -124,19 +125,20 @@ export const IoTPage: React.FC = () => {
   useEffect(() => {
     dispatch(setSensors(mockSensors));
     
-    // Simulate real-time alerts
+    // Simulate real-time alerts via ingestion service (triggers full workflow)
     if (autoRefresh) {
       const interval = setInterval(() => {
         const randomAlert = mockNewAlerts[Math.floor(Math.random() * mockNewAlerts.length)];
-        dispatch(addAlert({ ...randomAlert, id: `ALERT-${Date.now()}` }));
-      }, 30000); // New alert every 30 seconds
-      
+        iotIngestionService.ingest({ ...randomAlert, id: `ALERT-${Date.now()}` });
+      }, 30000);
       return () => clearInterval(interval);
     }
   }, [dispatch, autoRefresh]);
 
   const handleRefresh = () => {
     dispatch(setSensors(mockSensors));
+    // Simulate a fresh critical alert through the full pipeline
+    iotIngestionService.simulateAlert();
   };
 
   const handleAcknowledge = (alertId: string) => {

@@ -1,17 +1,19 @@
 import { configureStore } from '@reduxjs/toolkit';
-import authReducer from '../features/auth/authSlice';
+import authReducer   from '../features/auth/authSlice';
 import issuesReducer from '../features/issues/issuesSlice';
-import iotReducer from '../features/iot/iotSlice';
-import mapReducer from '../features/map/mapSlice';
+import iotReducer    from '../features/iot/iotSlice';
+import mapReducer    from '../features/map/mapSlice';
+import uiReducer     from '../features/ui/uiSlice';
 
 export const store = configureStore({
   reducer: {
-    auth: authReducer,
+    auth:   authReducer,
     issues: issuesReducer,
-    iot: iotReducer,
-    map: mapReducer,
+    iot:    iotReducer,
+    map:    mapReducer,
+    ui:     uiReducer,
   },
 });
 
-export type RootState = ReturnType<typeof store.getState>;
+export type RootState   = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

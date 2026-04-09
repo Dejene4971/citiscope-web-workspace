@@ -9,6 +9,7 @@ import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { Box, CircularProgress, Typography, Switch, FormControlLabel, Paper } from '@mui/material';
 import { RootState } from '../../store/store';
 import { setSelectedMarker } from '../../features/map/mapSlice';
+import { setSelectedIssueId } from '../../features/ui/uiSlice';
 
 // Fix Leaflet icon issue
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -90,6 +91,8 @@ export const MapView: React.FC<MapViewProps> = ({ height = '500px' }) => {
 
   const handleMarkerClick = (marker: any) => {
     dispatch(setSelectedMarker(marker.id));
+    // If this marker corresponds to an issue, open the shared detail modal
+    dispatch(setSelectedIssueId(marker.id));
   };
 
   if (!isMapReady) {

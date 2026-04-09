@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { setSelectedIssueId } from '../../features/ui/uiSlice';
 import {
   Box,
   Paper,
@@ -110,6 +112,7 @@ const getStatusColor = (status: string) => {
 };
 
 export const IssuesPage: React.FC = () => {
+  const dispatch = useDispatch();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [severityFilter, setSeverityFilter] = useState('all');
@@ -253,7 +256,7 @@ export const IssuesPage: React.FC = () => {
           </TableHead>
           <TableBody>
             {mockIssues.map((issue) => (
-              <TableRow key={issue.id} hover>
+              <TableRow key={issue.id} hover sx={{ cursor: 'pointer' }} onClick={() => dispatch(setSelectedIssueId(issue.id))}>
                 <TableCell>
                   <Typography variant="body2" fontWeight={500}>
                     {issue.id}
