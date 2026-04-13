@@ -5,6 +5,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { store } from './store/store';
 import App from './App';
+import { AppInitializer } from './AppInitializer';
 
 // Create Material-UI theme
 const theme = createTheme({
@@ -32,7 +33,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <Provider store={store}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <App />
+        <AppInitializer>
+          <App />
+        </AppInitializer>
       </ThemeProvider>
     </Provider>
   </React.StrictMode>
