@@ -20,7 +20,8 @@ import {
 } from '@mui/icons-material';
 import { MapView } from '../../components/map/MapView';
 import { RootState } from '../../store/store';
-import { setMarkers, setBoundaries, toggleLayer } from '../../features/map/mapSlice';
+import { toggleLayer } from '../../features/map/mapSlice';
+import { orchestrator } from '../../services/workflowOrchestrator';
 import { mockMarkers, mockBoundaries } from '../../data/mockMapData';
 
 export const MapViewPage: React.FC = () => {
@@ -28,10 +29,9 @@ export const MapViewPage: React.FC = () => {
   const { markers, boundaries, viewState } = useSelector((state: RootState) => state.map);
 
   useEffect(() => {
-    // Load mock data
-    dispatch(setMarkers(mockMarkers));
-    dispatch(setBoundaries(mockBoundaries));
-  }, [dispatch]);
+    // Publish through orchestrator — no direct slice imports needed
+    orchestrator.trigger('map:load_data', { markers: mockMarkers, boundaries: mockBoundaries });
+  }, []);
 
   const getSeverityCount = (severity: string) => {
     return markers.filter(m => m.severity === severity).length;

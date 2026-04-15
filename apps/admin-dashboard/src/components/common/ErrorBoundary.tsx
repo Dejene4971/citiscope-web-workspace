@@ -91,7 +91,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 Reload Page
               </Button>
             </Box>
-            {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
+            {import.meta.env.DEV && this.state.errorInfo && (
               <Box sx={{ mt: 3, textAlign: 'left' }}>
                 <Typography variant="caption" component="pre" sx={{ overflow: 'auto' }}>
                   {this.state.errorInfo.componentStack}

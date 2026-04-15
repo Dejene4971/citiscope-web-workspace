@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import { Assignment, Update, Download, Delete } from '@mui/icons-material';
 import { useDispatch } from 'react-redux';
-import { updateIssueStatus } from '../../features/issues/issuesSlice';
+import { orchestrator } from '../../services/workflowOrchestrator';
 import { showToast } from '../notifications/ToastNotifications';
 import { auditService } from '../../services/auditService';
 import type { AppDispatch } from '../../store/store';
@@ -50,12 +50,15 @@ export const BulkOperationsPanel: React.FC<BulkOperationsPanelProps> = ({
       saveAs(new Blob([buf], { type: 'application/octet-stream' }), `issues_export_${Date.now()}.xlsx`);
       showToast({ type: 'success', title: 'Exported', message: `${selectedIssues.length} issues exported` });
     } else if (action === 'status') {
-      selectedIssues.forEach(i => dispatch(updateIssueStatus({ issueId: i.issue_id, status: newStatus })));
-      auditService.log('UPDATE_STATUS', { entityType: 'bulk', payload: { count: selectedIssues.length, status: newStatus } });
+      selectedIssues.forEach(i =>
+        orchestrator.trigger('issue:status_changed', { issue: { ...i, status: newStatus }, previousStatus: i.status })
+      );
       showToast({ type: 'success', title: 'Updated', message: `${selectedIssues.length} issues set to ${newStatus}` });
     } else if (action === 'assign') {
       const tech = MOCK_TECHNICIANS.find(t => t.id === techId);
-      selectedIssues.forEach(i => dispatch(updateIssueStatus({ issueId: i.issue_id, status: 'assigned' })));
+      selectedIssues.forEach(i =>
+        orchestrator.trigger('issue:status_changed', { issue: { ...i, status: 'assigned' }, previousStatus: i.status })
+      );
       auditService.log('ASSIGN_TECHNICIAN', { entityType: 'bulk', payload: { count: selectedIssues.length, technicianId: techId } });
       showToast({ type: 'success', title: 'Assigned', message: `${selectedIssues.length} issues assigned to ${tech?.name}` });
     }

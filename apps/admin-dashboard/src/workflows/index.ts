@@ -141,4 +141,27 @@ export function registerAllHandlers(): void {
   orchestrator.register<UserLogoutPayload>('user:logout', ({ userId }) => {
     auditService.log('USER_LOGOUT', { userId, entityType: 'user', entityId: userId });
   });
+
+  // ── Assignment Handlers ───────────────────────────────────────────────────
+
+  orchestrator.register<{
+    issueId: string;
+    issueTitle: string;
+    technicianId: string;
+    technicianName: string;
+    technicianSpecialty: string;
+    assignedAt: string;
+  }>('assignment:created', ({ issueId, technicianName, issueTitle }) => {
+    store.dispatch(addNotification({
+      type: 'success',
+      title: '👷 Assignment Created',
+      message: `${technicianName} assigned to "${issueTitle}"`,
+      source: 'issue',
+    }));
+    auditService.log('ASSIGN_TECHNICIAN', {
+      entityId: issueId,
+      entityType: 'issue',
+      payload: { technicianName, issueTitle },
+    });
+  });
 }

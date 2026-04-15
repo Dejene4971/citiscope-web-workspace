@@ -10,6 +10,7 @@ import {
   Dashboard, Map, List, BarChart, Sensors, Menu as MenuIcon, Timeline,
 } from '@mui/icons-material';
 import { UnifiedNotificationSystem } from '../components/notifications/UnifiedNotificationSystem';
+import { logout } from '../features/auth/authSlice';
 import type { RootState, AppDispatch } from '../store/store';
 
 const NAV_ITEMS = [

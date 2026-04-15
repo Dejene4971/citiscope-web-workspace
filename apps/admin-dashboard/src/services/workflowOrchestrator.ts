@@ -1,7 +1,7 @@
 import { store } from '../store/store';
 import { addAlert } from '../features/iot/iotSlice';
-import { fetchSuccess } from '../features/issues/issuesSlice';
-import { setMarkers } from '../features/map/mapSlice';
+import { fetchSuccess, updateIssueStatus } from '../features/issues/issuesSlice';
+import { setMarkers, setBoundaries } from '../features/map/mapSlice';
 import { addNotification } from '../features/ui/uiSlice';
 import { auditService } from './auditService';
 import type { IoTAlert } from '../features/iot/iotSlice';
@@ -121,6 +121,9 @@ orchestrator.register<IoTAlert>('iot:alert', async (alert) => {
 orchestrator.register<{ issue: Issue; previousStatus: string; userId?: string }>('issue:status_changed', async ({ issue, previousStatus, userId }) => {
   const dispatch = store.dispatch;
 
+  // Update Redux store
+  dispatch(updateIssueStatus({ issueId: issue.issue_id, status: issue.status, userId }));
+
   dispatch(addNotification({
     type: issue.status === 'resolved' ? 'success' : 'info',
     title: issue.status === 'resolved' ? '✅ Issue Resolved' : '📋 Issue Updated',
@@ -144,4 +147,12 @@ orchestrator.register<{ issue: Issue; userId?: string }>('issue:created', async 
     userId,
     payload: { title: issue.title, severity: issue.severity, category: issue.category },
   });
+});
+
+/**
+ * Map data load → populate markers and boundaries from any source
+ */
+orchestrator.register<{ markers: Parameters<typeof setMarkers>[0]; boundaries: Parameters<typeof setBoundaries>[0] }>('map:load_data', ({ markers, boundaries }) => {
+  store.dispatch(setMarkers(markers));
+  store.dispatch(setBoundaries(boundaries));
 });

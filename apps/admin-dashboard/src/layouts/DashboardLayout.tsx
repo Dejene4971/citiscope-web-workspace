@@ -51,7 +51,8 @@ const ALL_MENU_ITEMS = [
   { path: '/predictive', label: 'Predictive AI',icon: TimelineIcon,   roles: ['federal_admin', 'regional_admin'] },
   { path: '/iot',        label: 'IoT Sensors',  icon: SensorsIcon,     roles: ['federal_admin', 'regional_admin', 'zonal_admin'] },
   { path: '/reports',    label: 'Reports',      icon: DescriptionIcon, roles: ['federal_admin', 'regional_admin'] },
-  { path: '/activity',   label: 'Activity Log', icon: HistoryIcon,     roles: ['federal_admin'] },
+  { path: '/activity',   label: 'Activity Log',    icon: HistoryIcon,     roles: ['federal_admin'] },
+  { path: '/settings',   label: 'System Settings', icon: SettingsIcon,    roles: ['federal_admin', 'regional_admin'] },
 ] as const;
 
 export const DashboardLayout: React.FC = () => {
