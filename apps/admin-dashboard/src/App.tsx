@@ -13,6 +13,7 @@ import { IoTPage } from './pages/iot/IoTPage';
 import { ProfilePage } from './pages/profile/ProfilePage';
 import { ReportPage } from './pages/reports/ReportPage';
 import { ActivityLogPage } from './pages/admin/ActivityLogPage';
+import { RoleAccessPage } from './pages/admin/RoleAccessPage';
 import { SystemSettingsPage } from './pages/settings/SystemSettingsPage';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
@@ -48,6 +49,7 @@ function AppContent() {
           <Route path="/profile"    element={<ProfilePage />} />
           <Route path="/reports"    element={<ReportPage />} />
           <Route path="/activity"   element={<ActivityLogPage />} />
+          <Route path="/roles"      element={<RoleAccessPage />} />
           <Route path="/settings"   element={<SystemSettingsPage />} />
           <Route path="*"           element={<Navigate to="/" replace />} />
         </Route>
